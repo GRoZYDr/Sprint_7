@@ -1,4 +1,7 @@
 import io.restassured.response.Response;
+import order.orderapi.OrderApiClient;
+import order.ordermodel.OrderCreationModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -7,12 +10,21 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-public class ParameterizeOrderCreationTest extends StepCheck {
+import static org.apache.http.HttpStatus.*;
+
+public class ParameterizeOrderCreationTest{
     OrderApiClient orderApiClient;
+    StepCheck stepCheck;
 
     @BeforeEach
     public void setUp() {
         orderApiClient = new OrderApiClient();
+        stepCheck = new StepCheck();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        stepCheck.assertAll();
     }
 
     static Stream<Arguments> orderValidParameters() {
@@ -79,8 +91,8 @@ public class ParameterizeOrderCreationTest extends StepCheck {
     @DisplayName("Проверка создания заказа")
     public void testOrderCreate(OrderCreationModel order) {
         Response response = orderApiClient.createNewOrder(order);
-        checkResponseStatusCode(response, 201);
-        checkResponseFieldExists(response, "track");
-        checkResponseFieldNotNull(response, "track");
+        stepCheck.checkResponseStatusCode(response, SC_CREATED);
+        stepCheck.checkResponseFieldExists(response, "track");
+        stepCheck.checkResponseFieldNotNull(response, "track");
     }
 }
